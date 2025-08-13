@@ -1,24 +1,27 @@
 import { MongoClient } from 'mongodb';
 
-const uri = process.env.MONGODB_URI || '';
+const uri = process.env.MONGODB_URI;
 const options = {};
 
-let client;
-let clientPromise: Promise<MongoClient>;
-
-if (!process.env.MONGODB_URI) {
+if (!uri) {
   throw new Error('Tambahkan MONGODB_URI ke .env.local');
 }
 
+let client: MongoClient;
+let clientPromise: Promise<MongoClient>;
+
+declare global {
+  // globalThis agar TypeScript tahu ada property ini
+  var _mongoClientPromise: Promise<MongoClient> | undefined;
+}
+
 if (process.env.NODE_ENV === 'development') {
-  // @ts-ignore
-  if (!global._mongoClientPromise) {
+  // Gunakan optional chaining agar aman
+  if (!globalThis._mongoClientPromise) {
     client = new MongoClient(uri, options);
-    // @ts-ignore
-    global._mongoClientPromise = client.connect();
+    globalThis._mongoClientPromise = client.connect();
   }
-  // @ts-ignore
-  clientPromise = global._mongoClientPromise;
+  clientPromise = globalThis._mongoClientPromise;
 } else {
   client = new MongoClient(uri, options);
   clientPromise = client.connect();

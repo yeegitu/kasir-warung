@@ -1,7 +1,6 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Sidebar from '@/components/Sidebar';
+import Sidebar from "@/components/Sidebar";
+import { Geist, Geist_Mono } from "next/font/google";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,13 +13,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: 'Kasir App',
-  description: 'Aplikasi kasir sederhana',
+  title: "Kasir App",
+  description: "Aplikasi kasir sederhana",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body className="flex">
         {/* Sidebar di kiri */}
         <Sidebar />
