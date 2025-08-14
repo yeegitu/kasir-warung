@@ -1,9 +1,19 @@
 import { NextResponse } from "next/server";
 import { getNotaCollection } from "@/models/nota";
 
+interface NotaItem {
+  nama: string;
+  harga: number;
+  jumlah: number;
+}
+
+interface NotaBody {
+  items: NotaItem[];
+}
+
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    const body: NotaBody = await req.json();
 
     // Validasi minimal
     if (!body.items || !Array.isArray(body.items) || body.items.length === 0) {
@@ -11,16 +21,16 @@ export async function POST(req: Request) {
     }
 
     // Pastikan semua harga & jumlah adalah number
-    const items = body.items.map((item: any) => ({
+    const items: NotaItem[] = body.items.map((item) => ({
       nama: String(item.nama || "").trim(),
       harga: Number(item.harga) || 0,
-      jumlah: Number(item.jumlah) || 0
+      jumlah: Number(item.jumlah) || 0,
     }));
 
     const col = await getNotaCollection();
     const result = await col.insertOne({
       items,
-      tanggal: new Date()
+      tanggal: new Date(),
     });
 
     return NextResponse.json(
