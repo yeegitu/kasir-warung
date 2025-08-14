@@ -10,10 +10,17 @@ export interface Barang {
   kategori: string;
 }
 
+// Helper: validasi ID MongoDB
+const validateId = (id: string) => id && ObjectId.isValid(id);
+
 // GET single barang by ID
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  const id = params.id;
-  if (!id || !ObjectId.isValid(id)) {
+export async function GET(
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> } // ⬅️ diubah jadi Promise
+) {
+  const { id } = await context.params; // ⬅️ harus di-await
+
+  if (!validateId(id)) {
     return NextResponse.json({ message: 'ID tidak valid' }, { status: 400 });
   }
 
@@ -26,7 +33,10 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       return NextResponse.json({ message: 'Barang tidak ditemukan' }, { status: 404 });
     }
 
-    return NextResponse.json(barang);
+    return NextResponse.json({
+      ...barang,
+      _id: barang._id.toString(), // konversi ObjectId ke string
+    });
   } catch (err) {
     return NextResponse.json(
       { message: 'Gagal mengambil barang', error: err instanceof Error ? err.message : err },
@@ -36,14 +46,19 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 // PUT update barang by ID
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
-  const id = params.id;
-  if (!id || !ObjectId.isValid(id)) {
+export async function PUT(
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> } // ⬅️ diubah jadi Promise
+) {
+  const { id } = await context.params; // ⬅️ harus di-await
+
+  if (!validateId(id)) {
     return NextResponse.json({ message: 'ID tidak valid' }, { status: 400 });
   }
 
   try {
     const { nama, harga, jumlah, kategori }: Barang = await req.json();
+
     if (!nama || harga == null || jumlah == null || !kategori) {
       return NextResponse.json({ message: 'Semua field wajib diisi' }, { status: 400 });
     }
@@ -69,9 +84,13 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 }
 
 // DELETE barang by ID
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const id = params.id;
-  if (!id || !ObjectId.isValid(id)) {
+export async function DELETE(
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> } // ⬅️ ubah jadi Promise
+) {
+  const { id } = await context.params; // ⬅️ harus di-await
+
+  if (!validateId(id)) {
     return NextResponse.json({ message: 'ID tidak valid' }, { status: 400 });
   }
 

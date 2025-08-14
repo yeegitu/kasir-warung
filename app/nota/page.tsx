@@ -1,7 +1,7 @@
 'use client';
 
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
 import { Trash2, Minus, Plus } from 'lucide-react';
 
 interface BarangTerpilih {
@@ -12,7 +12,7 @@ interface BarangTerpilih {
   kategori?: string;
 }
 
-export default function NotaPage() {
+function NotaContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const itemsParam = searchParams.get('items');
@@ -105,8 +105,7 @@ export default function NotaPage() {
     setBarangTerpilih(prev =>
       prev.map(item =>
         item._id === id && item.jumlah > 1
-          ? { ...item, jumlah: item.jumlah - 1 }
-          : item
+          ? { ...item, jumlah: item.jumlah - 1 } : item
       )
     );
   };
@@ -171,7 +170,6 @@ export default function NotaPage() {
                     </td>
                   </tr>
                 ))}
-                {/* Total */}
                 <tr className="font-bold bg-gray-50">
                   <td colSpan={3} className="text-right p-2">Total Keseluruhan</td>
                   <td className="text-right p-2">Rp {totalHarga.toLocaleString('id-ID')}</td>
@@ -181,7 +179,6 @@ export default function NotaPage() {
             </table>
           </div>
 
-          {/* Tombol aksi */}
           <div className="flex flex-wrap justify-center gap-2 mt-4 no-print">
             <button
               onClick={shareWhatsApp}
@@ -205,7 +202,6 @@ export default function NotaPage() {
         </>
       )}
 
-      {/* Print Styles */}
       <style jsx global>{`
         @media print {
           @page {
@@ -235,5 +231,13 @@ export default function NotaPage() {
         }
       `}</style>
     </div>
+  );
+}
+
+export default function NotaPage() {
+  return (
+    <Suspense fallback={<div className="text-center p-4">Memuat...</div>}>
+      <NotaContent />
+    </Suspense>
   );
 }

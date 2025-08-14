@@ -1,16 +1,16 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 
 interface Kategori {
   nama: string;
 }
 
+// GET semua kategori
 export async function GET() {
   try {
     const client = await clientPromise;
     const db = client.db('kasir');
 
-    // Ambil semua kategori dari MongoDB
     const result = await db.collection('kategori').find({}).toArray();
 
     // Mapping agar sesuai interface Kategori
@@ -19,17 +19,19 @@ export async function GET() {
     }));
 
     return NextResponse.json(kategori);
-  } catch (_error) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { message: 'Gagal fetch kategori' },
+      { message: 'Gagal fetch kategori', error: error instanceof Error ? error.message : null },
       { status: 500 }
     );
   }
 }
 
-export async function POST(req: Request) {
+// POST tambah kategori baru
+export async function POST(req: NextRequest) {
   try {
     const { nama }: Kategori = await req.json();
+
     if (!nama || nama.trim() === '') {
       return NextResponse.json(
         { message: 'Nama kategori tidak boleh kosong' },
@@ -42,14 +44,15 @@ export async function POST(req: Request) {
 
     // Cek apakah kategori sudah ada
     const existing = await db.collection('kategori').findOne({ nama });
+
     if (!existing) {
       await db.collection('kategori').insertOne({ nama });
     }
 
     return NextResponse.json({ message: 'Kategori disimpan' });
-  } catch (_error) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { message: 'Gagal tambah kategori' },
+      { message: 'Gagal tambah kategori', error: error instanceof Error ? error.message : null },
       { status: 500 }
     );
   }

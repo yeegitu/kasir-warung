@@ -4,6 +4,15 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Edit2, Trash2, Minus, Plus } from 'lucide-react';
 
+// Interface barang sesuai API
+export interface Barang {
+  _id: string;
+  nama: string;
+  harga: number;
+  jumlah: number;
+  kategori: string;
+}
+
 interface SelectedBarang {
   id: string;
   nama: string;
@@ -12,8 +21,8 @@ interface SelectedBarang {
 }
 
 export default function BarangPage() {
-  const [barang, setBarang] = useState<any[]>([]);
-  const [filteredBarang, setFilteredBarang] = useState<any[]>([]);
+  const [barang, setBarang] = useState<Barang[]>([]);
+  const [filteredBarang, setFilteredBarang] = useState<Barang[]>([]);
   const [selectedItems, setSelectedItems] = useState<SelectedBarang[]>([]);
   const [loadingDelete, setLoadingDelete] = useState<string | null>(null);
   const [searchNama, setSearchNama] = useState('');
@@ -41,7 +50,7 @@ export default function BarangPage() {
     setLoading(true);
     fetch('/api/barang')
       .then(res => res.json())
-      .then(data => {
+      .then((data: Barang[]) => {
         setBarang(data);
         setFilteredBarang(data);
         setLoading(false);
@@ -50,9 +59,10 @@ export default function BarangPage() {
   };
 
   useEffect(() => {
-    const filtered = barang.filter(b =>
-      b.nama.toLowerCase().includes(searchNama.toLowerCase()) &&
-      b.kategori.toLowerCase().includes(searchKategori.toLowerCase())
+    const filtered = barang.filter(
+      b =>
+        b.nama.toLowerCase().includes(searchNama.toLowerCase()) &&
+        b.kategori.toLowerCase().includes(searchKategori.toLowerCase())
     );
     setFilteredBarang(filtered);
   }, [searchNama, searchKategori, barang]);
@@ -61,13 +71,13 @@ export default function BarangPage() {
     return <div className="text-center mt-10">Memuat data barang...</div>;
   }
 
-  const toggleSelect = (item: any) => {
+  const toggleSelect = (item: Barang) => {
     setSelectedItems(prev => {
-      const isSelected = prev.some(selected => selected.id === String(item._id));
+      const isSelected = prev.some(selected => selected.id === item._id);
       if (isSelected) {
-        return prev.filter(selected => selected.id !== String(item._id));
+        return prev.filter(selected => selected.id !== item._id);
       } else {
-        return [...prev, { id: String(item._id), nama: item.nama, harga: item.harga, jumlah: 1 }];
+        return [...prev, { id: item._id, nama: item.nama, harga: item.harga, jumlah: 1 }];
       }
     });
   };
@@ -135,7 +145,7 @@ export default function BarangPage() {
         />
       </div>
 
-      {/* Desktop Table */}
+      {/* Table Desktop */}
       <div className="hidden sm:block bg-white shadow rounded-lg p-4 sm:p-6 overflow-x-auto max-h-[600px] overflow-y-auto">
         <table className="min-w-full border border-gray-300 text-gray-800 text-sm">
           <thead>
@@ -151,15 +161,12 @@ export default function BarangPage() {
             </tr>
           </thead>
           <tbody>
-            {filteredBarang.map((b) => {
-              const selectedItem = selectedItems.find(item => item.id === String(b._id));
+            {filteredBarang.map(b => {
+              const selectedItem = selectedItems.find(item => item.id === b._id);
               const isChecked = !!selectedItem;
 
               return (
-                <tr
-                  key={String(b._id)}
-                  className="border-t border-gray-300 hover:bg-gray-50"
-                >
+                <tr key={b._id} className="border-t border-gray-300 hover:bg-gray-50">
                   <td className="p-2 border-r border-gray-300 text-center">
                     <input
                       type="checkbox"
@@ -176,30 +183,24 @@ export default function BarangPage() {
                     {isChecked ? (
                       <div className="flex items-center justify-center space-x-1">
                         <button
-  type="button"
-  onClick={() =>
-    updateJumlah(String(b._id), selectedItem.jumlah - 1)
-  }
-  className="bg-gray-200 p-1 rounded-full"
-  aria-label="Kurangi jumlah item"   // <-- untuk screen reader
-  title="Kurangi jumlah item"        // <-- muncul tooltip saat hover
->
-  <Minus size={14} />
-</button>
-
+                          type="button"
+                          onClick={() => updateJumlah(b._id, selectedItem.jumlah - 1)}
+                          className="bg-gray-200 p-1 rounded-full"
+                          aria-label="Kurangi jumlah item"
+                          title="Kurangi jumlah item"
+                        >
+                          <Minus size={14} />
+                        </button>
                         <span className="px-1 font-medium text-black">{selectedItem.jumlah}</span>
                         <button
-  type="button"
-  onClick={() =>
-    updateJumlah(String(b._id), selectedItem.jumlah + 1)
-  }
-  className="bg-gray-200 p-1 rounded-full"
-  aria-label="Tambah jumlah item"   // <-- untuk screen reader
-  title="Tambah jumlah item"        // <-- muncul tooltip saat hover
->
-  <Plus size={14} />
-</button>
-
+                          type="button"
+                          onClick={() => updateJumlah(b._id, selectedItem.jumlah + 1)}
+                          className="bg-gray-200 p-1 rounded-full"
+                          aria-label="Tambah jumlah item"
+                          title="Tambah jumlah item"
+                        >
+                          <Plus size={14} />
+                        </button>
                       </div>
                     ) : (
                       <span>{b.jumlah}</span>
@@ -208,18 +209,17 @@ export default function BarangPage() {
                   <td className="p-2 border-r border-gray-300">{b.kategori}</td>
                   <td className="p-2 border-l border-gray-300 text-center space-x-1">
                     <button
-  type="button"
-  onClick={() => handleEdit(String(b._id))}
-  className="bg-yellow-400 hover:bg-yellow-500 text-white p-1 rounded"
-  aria-label="Edit item"   // <-- untuk screen reader
-  title="Edit item"        // <-- muncul tooltip saat hover
->
-  <Edit2 size={16} />
-</button>
-
+                      type="button"
+                      onClick={() => handleEdit(b._id)}
+                      className="bg-yellow-400 hover:bg-yellow-500 text-white p-1 rounded"
+                      aria-label="Edit item"
+                      title="Edit item"
+                    >
+                      <Edit2 size={16} />
+                    </button>
                     <button
                       type="button"
-                      onClick={() => handleDelete(String(b._id))}
+                      onClick={() => handleDelete(b._id)}
                       disabled={loadingDelete === b._id}
                       className={`p-1 rounded text-white ${
                         loadingDelete === b._id ? 'bg-gray-400 cursor-not-allowed' : 'bg-red-500 hover:bg-red-600'
@@ -235,78 +235,63 @@ export default function BarangPage() {
         </table>
       </div>
 
-      {/* Mobile Card View */}
+      {/* Mobile Card */}
       <div className="sm:hidden space-y-4">
-        {filteredBarang.map((b) => {
-          const selectedItem = selectedItems.find(item => item.id === String(b._id));
+        {filteredBarang.map(b => {
+          const selectedItem = selectedItems.find(item => item.id === b._id);
           const isChecked = !!selectedItem;
 
           return (
-            <div
-              key={String(b._id)}
-              className="border border-gray-300 rounded-lg p-4 shadow-sm"
-            >
+            <div key={b._id} className="border border-gray-300 rounded-lg p-4 shadow-sm">
               <div className="flex items-center justify-between mb-2">
                 <h2 className="font-semibold text-gray-800">{b.nama}</h2>
                 <input
-  type="checkbox"
-  checked={isChecked}
-  onChange={() => toggleSelect(b)}
-  aria-label={`Pilih ${b.nama}`}
-  title={`Pilih ${b.nama}`}
-/>
-
+                  type="checkbox"
+                  checked={isChecked}
+                  onChange={() => toggleSelect(b)}
+                  aria-label={`Pilih ${b.nama}`}
+                  title={`Pilih ${b.nama}`}
+                />
               </div>
-              <p className="text-sm text-gray-600 mb-1">
-                Harga: Rp {b.harga.toLocaleString('id-ID')}
-              </p>
-              <p className="text-sm text-gray-600 mb-1">
-                Kategori: {b.kategori}
-              </p>
+              <p className="text-sm text-gray-600 mb-1">Harga: Rp {b.harga.toLocaleString('id-ID')}</p>
+              <p className="text-sm text-gray-600 mb-1">Kategori: {b.kategori}</p>
               <div className="flex items-center justify-between mt-2">
                 <div className="flex items-center space-x-1">
                   <button
-  type="button"
-  onClick={() =>
-    updateJumlah(String(b._id), selectedItem ? selectedItem.jumlah - 1 : 1)
-  }
-  disabled={!isChecked}
-  className="bg-gray-300 p-2 rounded-full"
-  aria-label="Kurangi jumlah item"   // <-- untuk screen reader
-  title="Kurangi jumlah item"        // <-- muncul tooltip saat hover
->
-  <Minus size={16} className='text-white' />
-</button>
-
+                    type="button"
+                    onClick={() => updateJumlah(b._id, selectedItem ? selectedItem.jumlah - 1 : 1)}
+                    disabled={!isChecked}
+                    className="bg-gray-300 p-2 rounded-full"
+                    aria-label="Kurangi jumlah item"
+                    title="Kurangi jumlah item"
+                  >
+                    <Minus size={16} className="text-white" />
+                  </button>
                   <span className="px-2 font-medium text-black">{isChecked ? selectedItem.jumlah : 0}</span>
-                 <button
-  type="button"
-  onClick={() =>
-    updateJumlah(String(b._id), selectedItem ? selectedItem.jumlah + 1 : 1)
-  }
-  disabled={!isChecked}
-  className="bg-gray-300 p-2 rounded-full"
-  aria-label="Tambah jumlah item"   // <-- untuk screen reader
-  title="Tambah jumlah item"        // <-- muncul tooltip saat hover
->
-  <Plus size={16}  className='text-white'/>
-</button>
-
-                </div>
-                <div className="flex space-x-2">
-                 <button
-  type="button"
-  onClick={() => handleEdit(String(b._id))}
-  className="bg-yellow-400 hover:bg-yellow-500 text-white p-1 rounded"
-  aria-label="Edit item"      // <-- untuk screen reader
-  title="Edit item"           // <-- muncul tooltip saat hover
->
-  <Edit2 size={16} />
-</button>
-
                   <button
                     type="button"
-                    onClick={() => handleDelete(String(b._id))}
+                    onClick={() => updateJumlah(b._id, selectedItem ? selectedItem.jumlah + 1 : 1)}
+                    disabled={!isChecked}
+                    className="bg-gray-300 p-2 rounded-full"
+                    aria-label="Tambah jumlah item"
+                    title="Tambah jumlah item"
+                  >
+                    <Plus size={16} className="text-white" />
+                  </button>
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => handleEdit(b._id)}
+                    className="bg-yellow-400 hover:bg-yellow-500 text-white p-1 rounded"
+                    aria-label="Edit item"
+                    title="Edit item"
+                  >
+                    <Edit2 size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(b._id)}
                     disabled={loadingDelete === b._id}
                     className={`p-1 rounded text-white ${
                       loadingDelete === b._id ? 'bg-gray-400 cursor-not-allowed' : 'bg-red-500 hover:bg-red-600'
