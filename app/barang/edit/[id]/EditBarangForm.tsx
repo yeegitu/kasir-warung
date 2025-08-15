@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import Swal from 'sweetalert2';
 
 interface EditBarangFormProps {
   id: string;
@@ -57,18 +58,38 @@ export default function EditBarangForm({ id }: EditBarangFormProps) {
         }),
       });
 
-      const data = await res.json();
-      if (res.ok) {
-        alert('Barang berhasil diupdate');
-        router.push('/barang');
-      } else {
-        alert(data.message || 'Gagal update barang');
-      }
-    } catch {
-      alert('Error saat update barang');
-    } finally {
-      setLoading(false);
-    }
+     const data = await res.json();
+
+  if (res.ok) {
+    // Toast sukses setelah update
+    await Swal.fire({
+      icon: 'success',
+      title: 'Berhasil!',
+      text: 'Barang berhasil diupdate',
+      timer: 2000,
+      showConfirmButton: false,
+      position: 'top-end',
+      toast: true,
+    });
+
+    router.push('/barang');
+  } else {
+    Swal.fire({
+      icon: 'error',
+      title: 'Gagal!',
+      text: data.message || 'Gagal update barang',
+    });
+  }
+} catch (error) {
+  Swal.fire({
+    icon: 'error',
+    title: 'Error!',
+    text: 'Terjadi kesalahan saat update barang',
+  });
+  console.error(error);
+} finally {
+  setLoading(false);
+}
   };
 
   const formatRupiah = (value: string | number) => {

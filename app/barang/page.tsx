@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Edit2, Trash2, Minus, Plus } from 'lucide-react';
+import Swal from 'sweetalert2';
 
 // Interface barang sesuai API
 export interface Barang {
@@ -103,25 +104,56 @@ export default function BarangPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Yakin ingin menghapus barang ini?')) return;
-    setLoadingDelete(id);
-    try {
-      const res = await fetch(`/api/barang/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        alert('Barang berhasil dihapus');
-        fetchBarang();
-        setSelectedItems([]);
-      } else {
-        const data = await res.json();
-        alert(data.message || 'Gagal menghapus barang');
-      }
-    } catch (error) {
-      alert('Error menghapus barang');
-      console.error(error);
-    } finally {
-      setLoadingDelete(null);
+  // Tampilkan modal konfirmasi profesional
+  const result = await Swal.fire({
+    title: 'Hapus Barang?',
+    text: 'Yakin ingin menghapus barang ini?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Ya, hapus!',
+    cancelButtonText: 'Batal',
+  });
+
+  if (!result.isConfirmed) return;
+
+  setLoadingDelete(id);
+
+  try {
+    const res = await fetch(`/api/barang/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+      // Toast sukses setelah berhasil
+      Swal.fire({
+        icon: 'success',
+        title: 'Berhasil!',
+        text: 'Barang berhasil dihapus',
+        timer: 2000,
+        showConfirmButton: false,
+        position: 'top-end',
+        toast: true,
+      });
+      fetchBarang();
+      setSelectedItems([]);
+    } else {
+      const data = await res.json();
+      Swal.fire({
+        icon: 'error',
+        title: 'Gagal!',
+        text: data.message || 'Gagal menghapus barang',
+      });
     }
-  };
+  } catch (error) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error!',
+      text: 'Terjadi kesalahan saat menghapus barang',
+    });
+    console.error(error);
+  } finally {
+    setLoadingDelete(null);
+  }
+};
 
   return (
     <div className="space-y-6 relative px-2 sm:px-0">
