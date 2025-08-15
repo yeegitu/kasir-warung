@@ -26,6 +26,13 @@ export default function TambahBarangPage() {
 
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
+  const capitalizeWords = (text: string) => {
+  return text
+    .split(' ')
+    .map(word => word ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() : '')
+    .join(' ');
+};
+
   // Fetch kategori saat mount
   useEffect(() => {
     fetchKategori();
@@ -66,15 +73,6 @@ export default function TambahBarangPage() {
   const normalizeKategori = (nama: string) => {
     nama = nama.trim().toLowerCase();
     return nama.charAt(0).toUpperCase() + nama.slice(1);
-  };
-
-  // Kapitalisasi tiap kata (untuk Nama Barang dan kategoriBaru)
-  const capitalizeWords = (text: string) => {
-    return text
-      .split(' ')
-      .filter(Boolean)
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
   };
 
   // Tambah kategori baru
@@ -176,7 +174,7 @@ export default function TambahBarangPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          nama: capitalizeWords(nama.trim()), // otomatis kapital tiap kata
+          nama: capitalizeWords(nama.trim()), // kapitalisasi langsung
           harga: Number(harga.replace(/\./g, '')),
           jumlah: Number(jumlah),
           kategori: kategoriFinal,
@@ -284,16 +282,6 @@ export default function TambahBarangPage() {
                   <option key={i} value={k.trim()}>{k.trim()}</option>
                 ))}
               </select>
-
-              {kategori && (
-                <button
-                  type="button"
-                  onClick={() => handleHapusKategori(kategori)}
-                  className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                >
-                  Hapus
-                </button>
-              )}
             </div>
           </div>
 
